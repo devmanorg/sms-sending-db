@@ -15,6 +15,8 @@ Following async methods are available:
 
 `get_sms_mailing(…)` — Load from Redis all data about mailing with specified sms_id, returns dict.
 
+`list_sms_mailings()` — Return list of sms_id for all registered SMS mailings.
+
 ## Examples
 
 Checkout usage examples in `example.py` file. Install and run it woth command:

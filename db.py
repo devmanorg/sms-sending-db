@@ -102,3 +102,8 @@ class Database:
         mailing['phones'] = phones
 
         return mailing
+
+    async def list_sms_mailings(self):
+        """Return list of sms_id for all registered SMS mailings."""
+        keys = await self.redis.keys(f'sms_mailing_*')
+        return [key.split('_')[-1] for key in keys]

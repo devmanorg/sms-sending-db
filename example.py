@@ -33,8 +33,8 @@ async def main():
 
         await db.add_sms_mailing(sms_id, phones, text)
 
-        value = await redis.get(f'sms_mailing_{sms_id}')
-        print('Got value', value)
+        sms_ids = await db.list_sms_mailings()
+        print('Registered mailings ids', sms_ids)
 
         pending_sms_list = await db.get_pending_sms_list()
         print('pending:')
