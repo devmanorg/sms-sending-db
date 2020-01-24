@@ -83,25 +83,32 @@ class Database:
 
         await tr.execute()
 
-    async def get_sms_mailing(self, sms_id: str) -> dict:
-        """Load from Redis all data about mailing with specified sms_id, returns dict."""
-        sms_id_key = _clean_key(sms_id)
-        mailing_key = f'sms_mailing_{sms_id_key}'
-        phones_key = f'phones_for_sms_mailing_{sms_id_key}'
-
+    async def get_sms_mailings(self, *sms_ids: str) -> list:
+        """For each mailing in sms_ids load all data from Redis and return dict."""
         pipe = self.redis.pipeline()
-        pipe.get(mailing_key)
-        pipe.hgetall(phones_key)
+        for sms_id in sms_ids:
+            sms_id_key = _clean_key(sms_id)
+            mailing_key = f'sms_mailing_{sms_id_key}'
+            phones_key = f'phones_for_sms_mailing_{sms_id_key}'
 
-        [json_text, phones] = await pipe.execute()
+            pipe.get(mailing_key)
+            pipe.hgetall(phones_key)
 
-        if not json_text:
-            raise KeyError(f'Can`t find SMS mailing with id `{sms_id}`.')
+        values = await pipe.execute()
 
-        mailing = json.loads(json_text)
-        mailing['phones'] = phones
+        mailings = []
+        for json_text, phones in zip(values[::2], values[1::2]):
 
-        return mailing
+            if not json_text:
+                # SMS mailing was not found
+                continue
+
+            mailings.append({
+                **json.loads(json_text),
+                'phones': phones,
+            })
+
+        return mailings
 
     async def list_sms_mailings(self):
         """Return list of sms_id for all registered SMS mailings."""

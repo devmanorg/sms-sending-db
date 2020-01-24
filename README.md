@@ -13,7 +13,7 @@ Following async methods are available:
 
 `update_sms_status_in_bulk(…)` — Receives list of tuples (sms_id, phone, status).
 
-`get_sms_mailing(…)` — Load from Redis all data about mailing with specified sms_id, returns dict.
+`get_sms_mailings(…)` — For each mailing in sms_ids load all data from Redis. Return list of dicts — one dict per found mailing.
 
 `list_sms_mailings()` — Return list of sms_id for all registered SMS mailings.
 

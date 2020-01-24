@@ -48,9 +48,9 @@ async def main():
         print('pending:')
         print(pending_sms_list)
 
-        sms_mailing = await db.get_sms_mailing('99')
-        print('sms_mailing')
-        print(sms_mailing)
+        sms_mailings = await db.get_sms_mailings('99')
+        print('sms_mailings')
+        print(sms_mailings)
 
         async def send():
             while True:
