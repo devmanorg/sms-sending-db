@@ -17,16 +17,21 @@ async def main():
     parser = create_argparser()
     args = parser.parse_args()
 
-    redis = await aioredis.create_redis_pool(args.redis_uri, password=args.redis_password, encoding='utf-8')
+    redis = await aioredis.create_redis_pool(
+        args.redis_uri,
+        password=args.redis_password,
+        encoding='utf-8',
+    )
 
     try:
 
         db = Database(redis)
 
-        sms_id = '99'
+        sms_id = '1'
 
         phones = [
             '+7 999 519 05 57',
+            '911',
             '112',
         ]
         text = 'Вечером будет шторм!'
@@ -41,14 +46,18 @@ async def main():
         print(pending_sms_list)
 
         await db.update_sms_status_in_bulk([
-            ['99', '112', 'failed'],
+            # [sms_id, phone_number, status]
+            [sms_id, '112', 'failed'],
+            [sms_id, '911', 'pending'],
+            [sms_id, '+7 999 519 05 57', 'delivered'],
+            # following statuses are available: failed, pending, delivered
         ])
 
         pending_sms_list = await db.get_pending_sms_list()
         print('pending:')
         print(pending_sms_list)
 
-        sms_mailings = await db.get_sms_mailings('99')
+        sms_mailings = await db.get_sms_mailings('1')
         print('sms_mailings')
         print(sms_mailings)
 
@@ -59,7 +68,13 @@ async def main():
 
         async def listen():
             *_, channel = await redis.subscribe('updates')
-            async for raw_message in channel.iter():
+
+            while True:
+                raw_message = await channel.get()
+
+                if not raw_message:
+                    raise ConnectionError('Connection was lost')
+
                 message = raw_message.decode('utf-8')
                 print('Got message:', message)
 

@@ -11,7 +11,17 @@ Following async methods are available:
 
 `get_pending_sms_list()` — Get from Redis all pending messages.
 
-`update_sms_status_in_bulk(…)` — Receives list of tuples (sms_id, phone, status).
+`update_sms_status_in_bulk(…)` — Receives list of tuples (sms_id, phone, status). Usage example:
+
+```python
+await db.update_sms_status_in_bulk([
+    # [sms_id, phone_number, status]
+    [sms_id, phone_number1, 'failed'],
+    [sms_id, phone_number2, 'pending'],
+    [another_sms_id, phone_number2, 'delivered'],
+    # Status possible values: 'failed', 'pending' and 'delivered'
+])
+```
 
 `get_sms_mailings(…)` — For each mailing in sms_ids load all data from Redis. Return list of dicts — one dict per found mailing.
 
