@@ -35,15 +35,3 @@ Checkout usage examples in `example.py` file. Install and run it with command:
 $ pip install -r requirements.txt
 $ python example.py --address="redis://..." --password="..."
 ```
-
-## Check connection status
-
-There are two options how to check connection to Redis DB is still alive. The simplest one is to set timeouts for all operations with DB. E.g. if db operation  takes more than 5 seconds than connection is supposed lost. Aioredis will try to reconnect automatically, so you can just wait or interrupt db operations manually and try again later.
-
-Timeouts are useful only for communication with confirmations — when you send message and wait for db response. For Redis channels it is not always true. Your program can send messages to Redis channel without any income messages, so nothing can approve success of delivery to DB. In that case even detection of connection losing becomes a hard task. The best your option is to use TCP Keepalive messages — kind of ping-pong messages supported by TCP protocol. All work will be done by operating system. All you need is to configure socket properly. Check out `keepalive_example.py` code. Run example with command below:
-
-```
-$ python keepalive_example.py --address="redis://..." --password="..."
-```
-
-Wait for few seconds after script launch, than disable network connection. Exception will appear.
