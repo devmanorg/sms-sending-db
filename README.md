@@ -7,11 +7,17 @@ Database layer provides single `Database` class to interact with Redis DB.
 Following async methods are available:
 
 
-`add_sms_mailing(…)` — add to Redis all records required to represent new SMS mailing.
+### `add_sms_mailing(…)`
 
-`get_pending_sms_list()` — Get from Redis all pending messages.
+Method adds to Redis multiple records representing a new SMS mailing.
 
-`update_sms_status_in_bulk(…)` — Receives list of tuples (sms_id, phone, status). Usage example:
+### `get_pending_sms_list()`
+
+Method get from Redis all pending messages from all mailings at once.
+
+### `update_sms_status_in_bulk(…)`
+
+Method receives list of tuples `(sms_id, phone, status)`. Usage example:
 
 ```python
 await db.update_sms_status_in_bulk([
@@ -23,9 +29,13 @@ await db.update_sms_status_in_bulk([
 ])
 ```
 
-`get_sms_mailings(…)` — For each mailing in sms_ids load all data from Redis. Return list of dicts — one dict per found mailing.
+### `get_sms_mailings(…)`
 
-`list_sms_mailings()` — Return list of sms_id for all registered SMS mailings.
+Method loads from DB all mailings was saved before. It returns list of dicts — one dict per found mailing.
+
+### `list_sms_mailings()`
+
+Method returns list of sms_id for all registered SMS mailings.
 
 ## Examples
 
