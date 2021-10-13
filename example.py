@@ -7,8 +7,8 @@ from db import Database
 
 def create_argparser():
     parser = argparse.ArgumentParser(description='Redis database usage example')
-    parser.add_argument('--address', action='store', dest='redis_uri', help='Redis URI')
-    parser.add_argument('--password', action='store', dest='redis_password', help='Redis db password')
+    parser.add_argument('--address', action='store', dest='redis_uri', help='Redis URI', default="")
+    parser.add_argument('--password', action='store', dest='redis_password', help='Redis db password', default="")
 
     return parser
 
@@ -17,9 +17,8 @@ async def main():
     parser = create_argparser()
     args = parser.parse_args()
 
-    redis = await aioredis.create_redis_pool(
-        args.redis_uri,
-        password=args.redis_password,
+    redis = await aioredis.from_url(
+        "redis://localhost:6379",
         encoding='utf-8',
     )
 
@@ -67,25 +66,25 @@ async def main():
                 await redis.publish('updates', sms_id)
 
         async def listen():
-            *_, channel = await redis.subscribe('updates')
+            psub = redis.pubsub()
+            async with psub as channel:
+                await channel.subscribe('updates')
 
-            while True:
-                raw_message = await channel.get()
+                while True:
+                    raw_message = await channel.get_message(ignore_subscribe_messages=True)
 
-                if not raw_message:
-                    raise ConnectionError('Connection was lost')
-
-                message = raw_message.decode('utf-8')
-                print('Got message:', message)
-
+                    if raw_message:
+                        raw_data = raw_message.get("data", None)
+                        data = raw_data.decode()
+                        print('Got message:', data)
+                    
         await asyncio.gather(
             send(),
             listen()
         )
 
     finally:
-        redis.close()
-        await redis.wait_closed()
+        await redis.close()
 
 if __name__ == '__main__':
     asyncio.run(main())
