@@ -1,6 +1,6 @@
 # Database layer for SMS mailing service
 
-Database layer provides single `Database` class to interact with Redis DB.
+The database layer provides a single `Database` class to interact with Redis DB.
 
 ## Database methods
 
@@ -9,11 +9,11 @@ Following async methods are available:
 
 ### `add_sms_mailing(…)`
 
-Method adds to Redis multiple records representing a new SMS mailing.
+The method adds to Redis multiple records representing a new SMS mailing.
 
 ### `get_pending_sms_list()`
 
-Method get from Redis all pending messages from all mailings at once.
+The method gets from Redis all pending messages from all mailings at once.
 
 ### `update_sms_status_in_bulk(…)`
 
@@ -35,7 +35,7 @@ Method loads from DB all mailings was saved before. It returns list of dicts —
 
 ### `list_sms_mailings()`
 
-Method returns list of sms_id for all registered SMS mailings.
+The method returns a list of sms_id for all registered SMS mailings.
 
 ## Examples
 
