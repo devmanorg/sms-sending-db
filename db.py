@@ -38,19 +38,22 @@ class Database:
         mailing_key = f'sms_mailing_{sms_id_key}'
         mailing_phones_key = f'phones_for_sms_mailing_{sms_id_key}'
 
-        tr = self.redis.multi_exec()
-        tr.set(mailing_key, json.dumps({
-            'sms_id': sms_id,
-            'text': text,
-            'created_at': float(created_at or time.time()),
-            'phones_count': len(phones),
-        }, ensure_ascii=False))
+        async with self.redis.pipeline(transaction=True) as pipe:
+            pipe.set(
+                mailing_key,
+                json.dumps({
+                    'sms_id': sms_id,
+                    'text': text,
+                    'created_at': float(created_at or time.time()),
+                    'phones_count': len(phones),
+                }, ensure_ascii=False)
+            )
 
-        for phone in phones:
-            # escaping for phone number is not required here, any string is acceptable
-            tr.hset(mailing_phones_key, phone, 'pending')
+            for phone in phones:
+                # escaping for phone number is not required here, any string is acceptable
+                pipe.hset(mailing_phones_key, phone, 'pending')
 
-        await tr.execute()
+            await pipe.execute()
 
     async def get_pending_sms_list(self):
         """Get from Redis all pending messages."""
@@ -73,15 +76,15 @@ class Database:
 
     async def update_sms_status_in_bulk(self, sms_list):
         """Receives list of tuples (sms_id, phone, status)."""
-        tr = self.redis.multi_exec()
+        async with self.redis.pipeline(transaction=True) as pipe:
+        
+            for sms_id, phone, status in sms_list:
+                sms_id_key = _clean_key(sms_id)
+                cleaned_status = _clean_sms_status(status)
+                mailing_phones_key = f'phones_for_sms_mailing_{sms_id_key}'
+                pipe.hset(mailing_phones_key, phone, cleaned_status)
 
-        for sms_id, phone, status in sms_list:
-            sms_id_key = _clean_key(sms_id)
-            cleaned_status = _clean_sms_status(status)
-            mailing_phones_key = f'phones_for_sms_mailing_{sms_id_key}'
-            tr.hset(mailing_phones_key, phone, cleaned_status)
-
-        await tr.execute()
+            await pipe.execute()
 
     async def get_sms_mailings(self, *sms_ids: str) -> list:
         """For each mailing in sms_ids load all data from Redis and return dict."""
