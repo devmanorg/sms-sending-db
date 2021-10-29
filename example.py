@@ -11,16 +11,9 @@ def create_argparser():
         '--address',
         action='store',
         dest='redis_uri',
-        help='Redis URI',
+        help='Redis URL. See examples at https://aioredis.readthedocs.io/en/latest/api/high-level/#aioredis.client.Redis.from_url',
         default='redis://localhost'
     )
-    parser.add_argument(
-        '--password',
-        action='store',
-        dest='redis_password',
-        help='Redis db password'
-    )
-
     return parser
 
 
